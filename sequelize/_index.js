@@ -7,7 +7,7 @@ const sequelize = new Sequelize({
   username: 'ympcpnywcjqdlb',
   password: '3ac2d9d159638c0f56662b5eeacd9686c948928b07691b57b524c0f7a6e2b5fe',
   dialect: 'postgres',
-  logging: false
+  logging: false,
 });
 
 module.exports = sequelize;

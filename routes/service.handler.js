@@ -20,7 +20,7 @@ router.get('/removeService', async (req, res) => {
 });
 
 router.get('/otherServices', async (req, res) => {
-  const user = await User.findOne({ where: { Uid: req.query.uid }, include: { model: Service, as: 'UserService' } });
+  const user = await User.findOne({ where: { Uid: req.query.uid }, include: { model: Service, as: 'Services' } });
   const [notSubscribed] = await sequelize.query(
     `SELECT * FROM SERVICES WHERE SERVICES.ID NOT IN (SELECT SERVICES.ID FROM USERS, SERVICES, USERSERVICES WHERE USERS.ID = ${user.Id} AND USERSERVICES.USERID = USERS.ID AND USERSERVICES.SERVICEID = SERVICES.ID)`,
   );

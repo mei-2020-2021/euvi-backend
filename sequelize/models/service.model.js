@@ -21,7 +21,7 @@ Service.init(
     IconUrl: {
       type: Sequelize.DataTypes.STRING,
       allowNull: false,
-    }
+    },
   },
   {
     sequelize,
@@ -31,7 +31,7 @@ Service.init(
 
 Service.belongsToMany(Content, { through: 'ContentService' });
 Content.belongsToMany(Service, { through: 'ContentService' });
-Service.belongsToMany(User, { through: 'UserService' });
-User.belongsToMany(Service, { through: 'UserService' });
+Service.belongsToMany(User, { as: 'UserServices', through: 'UserService' });
+User.belongsToMany(Service, { as: 'ServiceUsers', through: 'UserService' });
 
 module.exports = Service;

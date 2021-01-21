@@ -5,6 +5,21 @@ const sequelize = require('../sequelize/_index');
 const { Op } = require('sequelize');
 const Service = require('../sequelize/models/service.model');
 
+
+
+router.post('/', async function (req, res) {
+ const newUser = await User.create({
+    Uid: req.body.Uid,
+    FirstName: req.body.FirstName,
+    LastName: req.body.LastName,
+    BirthDate: req.body.BirthDate,
+    Email: req.body.Email,
+  });
+  return res.status(200).json(newUser);
+});
+
+
+
 router.get('/', async function (req, res) {
   const id = req.query.id;
   const uid = req.query.uid;

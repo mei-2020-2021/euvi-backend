@@ -7,30 +7,13 @@ const ContentStatus = require('../sequelize/models/contentStatus.model');
 const SeriesEpisode = require('../sequelize/models/seriesEpisode.model');
 const StatusType = require('../sequelize/models/statusType.model');
 const Genre = require('../sequelize/models/genre.model');
-
 const sequelize = require('../sequelize/_index');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const { id } = req.query;
-
-  if (id) {
-    const content = await Content.findByPk(id, { include: { all: true, nested: false } });
-    return res.status(200).json(content);
-  }
-  const allContent = await Content.findAll({
-    include: {
-      all: true,
-      nested: false,
-    },
-    where: {
-      ContentTypeId: {
-        [Op.ne]: 3,
-      },
-    },
-  });
-  return res.status(200).json(allContent);
+  const content = await Content.findByPk(req.query.id, { include: { all: true, nested: false } });
+  return res.status(200).json(content);
 });
 
 router.get('/search', async (req, res) => {
@@ -170,24 +153,14 @@ router.get('/search', async (req, res) => {
 });
 
 router.get('/watchlist', async (req, res) => {
-  const { uid } = req.query;
-  const statusTypeId = parseInt(req.query.statusTypeId);
-  if (uid) {
-    const user = await User.findOne({
-      where: {
-        Uid: uid,
-      },
-    });
-    if (user.Id) {
-      const [contents, metadata] = await sequelize.query(
-        `SELECT Contents.* from Users LEFT JOIN ContentStatus ON Users.Id = ContentStatus.UserId LEFT JOIN Contents ON ContentStatus.ContentId = Contents.Id WHERE ContentTypeId != 3 AND ContentStatus.StatusTypeId = ${
-          statusTypeId
-        } AND Users.Id = ${
-          user.Id}`,
-      );
-      return res.status(200).json(contents);
-    }
-  }
+  const user = await User.findOne({ where: { Uid: req.query.uid } });
+  const [watchlist] = await sequelize.query(
+    `SELECT Contents.* from Users LEFT JOIN ContentStatus ON Users.Id = ContentStatus.UserId LEFT JOIN Contents ON ContentStatus.ContentId = Contents.Id WHERE ContentTypeId != 3 AND ContentStatus.StatusTypeId = ${
+      req.query.statusTypeId
+    } AND Users.Id = ${
+      user.Id}`,
+  );
+  return res.status(200).json(watchlist);
 });
 
 router.post('/createStatus', async (req, res) => {
@@ -378,49 +351,31 @@ router.post('/updateStatusType', async (req, res) => {
   return res.status(200).json(contentStatusTypeId);
 });
 
-router.get('/watchedAt', async (req, res) => {
-  const userUid = req.query.uid;
-  const { contentId } = req.query;
-
-  const user = await User.findOne({
-    where: {
-      Uid: userUid,
-    },
-  });
-
-  const content = await Content.findOne({
-    where: {
-      Id: contentId,
-    },
-  });
-
-  const contentWatchedAt = await ContentStatus.findOne({
-    where: {
-      ContentId: contentId,
-      UserId: user.Id,
-    },
-  });
-
-  if (contentWatchedAt) {
-    return res.status(200).json(contentWatchedAt.WatchedAt);
-  }
-  return res.status(200).json([]);
-});
-
-router.get('/contentStatus', async (req, res) => {
+router.get('/seenAt', async (req, res) => {
   const user = await User.findOne({ where: { Uid: req.query.uid } });
-  const contentWatchedAt = await ContentStatus.findOne({
+  const contentStatus = await ContentStatus.findOne({
     where: {
       ContentId: req.query.contentId,
       UserId: user.Id,
     },
   });
-  return res.status(200).json(contentWatchedAt ? contentWatchedAt.StatusTypeId : null);
+  return res.status(200).json(contentStatus ? contentStatus.WatchedAt : null);
+});
+
+router.get('/contentStatus', async (req, res) => {
+  const user = await User.findOne({ where: { Uid: req.query.uid } });
+  const contentStatus = await ContentStatus.findOne({
+    where: {
+      ContentId: req.query.contentId,
+      UserId: user.Id,
+    },
+  });
+  return res.status(200).json(contentStatus ? contentStatus.StatusTypeId : null);
 });
 
 router.get('/trendingNow', async (req, res) => {
   const trendingNow = await Content.findAll({
-    order: Sequelize.literal('rand()'),
+    // order: Sequelize.literal('rand()'),
     include: { all: true, nested: false },
     where: { ContentTypeId: { [Op.ne]: 3 } },
   });
@@ -429,7 +384,7 @@ router.get('/trendingNow', async (req, res) => {
 
 router.get('/topMovies', async (req, res) => {
   const topMovies = await Content.findAll({
-    order: Sequelize.literal('rand()'),
+    // order: Sequelize.literal('rand()'),
     include: { all: true, nested: false },
     where: { ContentTypeId: 1 },
   });
@@ -438,7 +393,7 @@ router.get('/topMovies', async (req, res) => {
 
 router.get('/topSeries', async (req, res) => {
   const topSeries = await Content.findAll({
-    order: Sequelize.literal('rand()'),
+    // order: Sequelize.literal('rand()'),
     include: { all: true, nested: false },
     where: { ContentTypeId: 2 },
   });

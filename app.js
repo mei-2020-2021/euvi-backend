@@ -7,6 +7,7 @@ const app = express();
 const router = express.Router();
 const routes = require('./routes/_index');
 const sequelize = require('./sequelize/_index');
+const init = require('./routes/init.handler');
 require('./sequelize/models/_index');
 
 app.use(logger('dev'));
@@ -17,7 +18,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const database = async () => {
   await sequelize.authenticate();
-  await sequelize.sync();
+  await sequelize.sync({ force: true });
+  await init();
 };
 
 database();
